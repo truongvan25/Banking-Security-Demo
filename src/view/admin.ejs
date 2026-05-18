@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        nav { display: flex; justify-content: space-between; align-items: center;
+              background: #c0392b; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 30px; }
+        nav a { color: white; text-decoration: none; margin-left: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; }
+        .badge { padding: 3px 8px; border-radius: 10px; font-size: 12px; color: white; }
+        .ADMIN    { background: #e74c3c; }
+        .AUDITOR  { background: #f39c12; }
+        .CUSTOMER { background: #27ae60; }
+    </style>
+</head>
+<body>
+    <nav>
+        <span>Admin Panel</span>
+        <div>
+            <a href="/dashboard">← Dashboard</a>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </nav>
+
+    <h2>Danh sách người dùng (<%= users.length %>)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Số dư</th>
+                <th>Ngày tạo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(u => { %>
+            <tr>
+                <td><%= u.id %></td>
+                <td><%= u.username %></td>
+                <td><span class="badge <%= u.role %>"><%= u.role %></span></td>
+                <td><%= u.Account ? Number(u.Account.balance).toLocaleString('vi-VN') + ' VNĐ' : '—' %></td>
+                <td><%= new Date(u.createdAt).toLocaleDateString('vi-VN') %></td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+</html>

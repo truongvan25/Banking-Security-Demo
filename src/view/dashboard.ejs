@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        nav { display: flex; justify-content: space-between; align-items: center;
+              background: #2c3e50; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 30px; }
+        nav a { color: white; text-decoration: none; margin-left: 15px; font-size: 14px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px;
+                 font-size: 12px; font-weight: bold; color: white; }
+        .ADMIN    { background: #e74c3c; }
+        .AUDITOR  { background: #f39c12; }
+        .CUSTOMER { background: #27ae60; }
+        .balance  { font-size: 32px; font-weight: bold; color: #2980b9; margin: 10px 0; }
+        .btn { padding: 8px 16px; border-radius: 4px; text-decoration: none;
+               color: white; display: inline-block; margin-right: 8px; }
+        .btn-blue { background: #2980b9; }
+        .btn-red  { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <nav>
+        <span>Banking Security Demo</span>
+        <div>
+            <span>Xin chào, <b><%= user.username %></b></span>
+            <span class="badge <%= user.role %>"><%= user.role %></span>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </nav>
+
+    <div class="card">
+        <h2>Thông tin tài khoản</h2>
+        <p>Username: <b><%= user.username %></b></p>
+        <p>Role: <span class="badge <%= user.role %>"><%= user.role %></span></p>
+
+        <% if (user.Account) { %>
+            <p>Số dư:</p>
+            <div class="balance"><%= Number(user.Account.balance).toLocaleString('vi-VN') %> VNĐ</div>
+        <% } %>
+    </div>
+
+    <div class="card">
+        <h3>Chức năng</h3>
+        <% if (user.role === 'ADMIN') { %>
+            <a href="/admin" class="btn btn-red">Quản lý người dùng</a>
+        <% } %>
+        <% if (user.role === 'AUDITOR') { %>
+            <a href="/audit" class="btn btn-blue">Xem Audit Logs</a>
+        <% } %>
+        <% if (user.role === 'CUSTOMER') { %>
+            <a href="/transfer" class="btn btn-blue">Chuyển tiền</a>
+        <% } %>
+    </div>
+</body>
+</html>

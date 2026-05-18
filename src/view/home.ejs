@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Banking Security Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; }
+        .card { border: 1px solid #ccc; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .danger { border-color: #e74c3c; background: #fdf2f2; }
+        .safe   { border-color: #27ae60; background: #f2fdf5; }
+        a { display: inline-block; padding: 8px 16px; margin-top: 10px;
+            border-radius: 4px; text-decoration: none; color: white; }
+        .btn-danger { background: #e74c3c; }
+        .btn-safe   { background: #27ae60; }
+        .btn-blue   { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <h1>Mini Banking — Security Demo</h1>
+
+    <div class="card safe">
+        <h3>Secure Login</h3>
+        <p>Dùng Sequelize ORM + BCrypt. Chống SQL Injection.</p>
+        <a href="/login" class="btn-safe">Vào trang login</a>
+    </div>
+
+    <div class="card danger">
+        <h3>Vulnerable Demo</h3>
+        <p>String concatenation — có thể bị SQL Injection bypass.</p>
+        <a href="/vulnerable" class="btn-danger">Xem demo tấn công</a>
+    </div>
+
+    <div class="card">
+        <h3>Admin Panel</h3>
+        <a href="/admin" class="btn-blue">Vào Admin</a>
+    </div>
+
+    <div class="card">
+        <h3>Audit Logs</h3>
+        <a href="/audit" class="btn-blue">Xem Logs</a>
+    </div>
+</body>
+</html>
