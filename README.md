@@ -61,7 +61,7 @@ database/
 ### Bước 1 — Clone và cài dependencies
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/truongvan25/Banking-Security-Demo.git
 cd Banking-Security
 npm install
 ```
