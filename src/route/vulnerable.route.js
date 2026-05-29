@@ -6,9 +6,11 @@ import {
     secureLogin,
     secureSearch,
 } from '../controller/vulnerable.controller.js';
+import { requireDemoMode } from '../middleware/demo.middleware.js';
 
 const router = Router();
 
+router.use('/vulnerable', requireDemoMode);
 router.get('/vulnerable', showVulnerable);
 router.post('/vulnerable/login',         vulnerableLogin);
 router.post('/vulnerable/search',        vulnerableSearch);

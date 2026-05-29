@@ -27,7 +27,11 @@
         <div>
             <span>Xin chào, <b><%= user.username %></b></span>
             <span class="badge <%= user.role %>"><%= user.role %></span>
-            <a href="/logout">Đăng xuất</a>
+            <form method="POST" action="/logout" style="display:inline;">
+                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;">
+                    Đăng xuất
+                </button>
+            </form>
         </div>
     </nav>
 
@@ -52,6 +56,7 @@
         <% } %>
         <% if (user.role === 'CUSTOMER') { %>
             <a href="/transfer" class="btn btn-blue">Chuyển tiền</a>
+            <a href="/transactions" class="btn btn-blue">Lịch sử giao dịch</a>
         <% } %>
     </div>
 </body>

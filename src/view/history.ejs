@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử giao dịch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1050px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #fafafa;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2c3e50;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .balance {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2980b9;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f6f9;
+            color: #2c3e50;
+        }
+
+        .outgoing {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .incoming {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #777;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2980b9;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <span>Transaction History</span>
+        <div>
+            <span>Xin chào, <b><%= username %></b></span>
+            <a href="/dashboard">← Dashboard</a>
+            <a href="/transfer">Chuyển tiền</a>
+            <form method="POST" action="/logout" style="display:inline;">
+                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;">
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="card">
+        <h2 style="margin-top: 0;">Thông tin tài khoản</h2>
+        <p>Account ID: <b>#<%= account.id %></b></p>
+        <p>Số dư hiện tại:</p>
+        <div class="balance">
+            <%= Number(account.balance).toLocaleString('vi-VN') %> VNĐ
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top: 0;">Lịch sử giao dịch</h2>
+
+        <% if (!transactions || transactions.length === 0) { %>
+            <div class="empty">
+                Bạn chưa có giao dịch nào.
+            </div>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Loại giao dịch</th>
+                        <th>Tài khoản gửi</th>
+                        <th>Tài khoản nhận</th>
+                        <th>Số tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% transactions.forEach(transaction => { %>
+                        <% const isOutgoing = Number(transaction.from_account) === Number(account.id); %>
+                        <tr>
+                            <td>
+                                <%= new Date(transaction.createdAt).toLocaleString('vi-VN') %>
+                            </td>
+                            <td class="<%= isOutgoing ? 'outgoing' : 'incoming' %>">
+                                <%= isOutgoing ? 'Tiền gửi đi' : 'Tiền nhận vào' %>
+                            </td>
+                            <td>#<%= transaction.from_account %></td>
+                            <td>#<%= transaction.to_account %></td>
+                            <td class="<%= isOutgoing ? 'outgoing' : 'incoming' %>">
+                                <%= isOutgoing ? '-' : '+' %><%= Number(transaction.amount).toLocaleString('vi-VN') %> VNĐ
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+
+    <a class="btn" href="/transfer">Chuyển tiền mới</a>
+</body>
+</html>

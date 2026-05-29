@@ -52,3 +52,134 @@
     </table>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Audit Logs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #8e44ad;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        .LOGIN_SUCCESS,
+        .SECURE_LOGIN_SUCCESS {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .LOGIN_FAIL,
+        .SECURE_LOGIN_FAIL {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .SQL_INJECTION_ATTEMPT {
+            color: #c0392b;
+            background: #fdecea;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .UNAUTHORIZED_ACCESS {
+            color: #e67e22;
+            font-weight: bold;
+        }
+
+        .TRANSFER {
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .LOGIN_BLOCKED,
+        .ACCOUNT_TEMPORARILY_LOCKED {
+            color: #8e44ad;
+            background: #f4ecf7;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <span>Audit Logs</span>
+        <div>
+            <a href="/dashboard">← Dashboard</a>
+            <form method="POST" action="/logout" style="display:inline;">
+                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;">
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <h2>Security Audit Logs (<%= logs.length %> entries)</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Event</th>
+                <th>Username</th>
+                <th>IP</th>
+                <th>Details</th>
+                <th>Thời gian</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% logs.forEach(log => { %>
+                <tr>
+                    <td><%= log.id %></td>
+                    <td>
+                        <span class="<%= log.event_type %>">
+                            <%= log.event_type %>
+                        </span>
+                    </td>
+                    <td><%= log.username %></td>
+                    <td><%= log.ip_address %></td>
+                    <td><%= log.details %></td>
+                    <td><%= new Date(log.createdAt).toLocaleString('vi-VN') %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+</html>
