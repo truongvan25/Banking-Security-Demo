@@ -11,10 +11,11 @@ const containsSqlInjectionPattern = (value = '') => {
 
 export const showVulnerable = (req, res) => {
     res.render('vulnerable', {
-        loginResult: null,
-        searchResult: null,
-        loginQuery: null,
-        searchQuery: null,
+        loginResult: null, searchResult: null,
+        loginQuery: null,  searchQuery: null,
+        idResult: null,    idQuery: null,
+        blindResult: null, blindQuery: null,
+        blindElapsed: null,
         mode: null,
     });
 };
@@ -199,4 +200,78 @@ export const secureSearch = async (req, res) => {
             mode: 'secure-search',
         });
     }
+};
+
+export const vulnerableSearchById = async (req, res) => {
+    const { user_id } = req.body;
+    const sql = `SELECT id, username, role FROM users WHERE id = ${user_id}`;
+
+    if (containsSqlInjectionPattern(user_id)) {
+        await AuditLog.create({
+            event_type: 'SQL_INJECTION_ATTEMPT',
+            username: 'anonymous',
+            ip_address: req.ip,
+            details: 'Suspicious payload in vulnerable ID search demo',
+        });
+    }
+
+    connection.query(sql, (err, results) => {
+        res.render('vulnerable', {
+            loginResult: null, searchResult: null,
+            idResult: err ? `SQL Error: ${err.sqlMessage}` : results,
+            idQuery: sql,
+            loginQuery: null, searchQuery: null,
+            blindResult: null, blindQuery: null,
+            mode: 'id-search',
+        });
+    });
+};
+
+export const secureSearchById = async (req, res) => {
+    const { user_id } = req.body;
+    const displayedSql = 'SELECT id, username, role FROM users WHERE id = ?';
+
+    const users = await User.findAll({
+        attributes: ['id', 'username', 'role'],
+        where: { id: user_id },
+    });
+
+    res.render('vulnerable', {
+        loginResult: null, searchResult: null,
+        idResult: users,
+        idQuery: displayedSql,
+        loginQuery: null, searchQuery: null,
+        blindResult: null, blindQuery: null,
+        mode: 'secure-id-search',
+    });
+};
+
+export const vulnerableBlind = async (req, res) => {
+    const { payload } = req.body;
+    const sql = `SELECT id FROM users WHERE username = '${payload}'`;
+    const start = Date.now();
+
+    if (containsSqlInjectionPattern(payload)) {
+        await AuditLog.create({
+            event_type: 'SQL_INJECTION_ATTEMPT',
+            username: 'anonymous',
+            ip_address: req.ip,
+            details: 'Time-based blind injection attempt detected',
+        });
+    }
+
+    connection.query(sql, (err, results) => {
+        const elapsed = Date.now() - start;
+        res.render('vulnerable', {
+            loginResult: null, searchResult: null,
+            idResult: null, idQuery: null,
+            loginQuery: null, searchQuery: null,
+            blindResult: err
+                ? `SQL Error: ${err.sqlMessage}`
+                : `Trả về ${results.length} kết quả`,
+            blindQuery: sql,
+            blindElapsed: elapsed,
+            mode: 'blind',
+        });
+    });
 };

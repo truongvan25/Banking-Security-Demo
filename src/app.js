@@ -17,6 +17,8 @@ import auditorRoute from './route/auditor.route.js';
 import vulnerableRoute from './route/vulnerable.route.js';
 import transferRoute from './route/transfer.route.js';
 import historyRoute from './route/history.route.js';
+import { optionalAuth } from './middleware/auth.middleware.js';
+
 
 import {
     ensureCsrfId,
@@ -96,11 +98,13 @@ app.set('views', './src/view');
 /*
     Trang chủ nhận demoMode để sau này ẩn/hiện nút SQL Injection Demo.
 */
-app.get('/', (req, res) => {
+app.get('/', optionalAuth, (req, res) => {
     res.render('home', {
         demoMode: process.env.DEMO_MODE === 'true',
+        user: req.user || null,
     });
 });
+
 
 /*
     Routes.

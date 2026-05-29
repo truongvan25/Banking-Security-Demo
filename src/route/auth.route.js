@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { showLogin, login, logout } from '../controller/auth.controller.js';
 import { loginLimiter } from '../middleware/rate-limit.middleware.js';
+import { requireAuth } from '../middleware/auth.middleware.js'
 import {
     doubleCsrfProtection,
     attachCsrfToken,
@@ -29,6 +30,6 @@ router.post(
     Logout tạm giữ GET ở bước này.
     Sau khi Login CSRF chạy ổn, ta sẽ đổi Logout sang POST + CSRF.
 */
-router.get('/logout', logout);
+router.get('/logout', requireAuth, logout);
 
 export default router;

@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../model/user.model.js';
 import AuditLog from '../model/audit.model.js';
+import { rotateCsrfContext } from '../middleware/csrf.middleware.js';
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_DURATION_MINUTES = 5;
@@ -191,8 +192,8 @@ export const login = async (req, res) => {
         });
 
         return res.redirect(redirect);
-    } catch (err) {
-        console.error(err);
+        } catch (err) {
+            console.error(err);
 
         return res.render('login', {
             error: 'Lỗi server',
@@ -201,12 +202,24 @@ export const login = async (req, res) => {
     }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
+    const username = req.user?.username || 'unknown';
+
+    await AuditLog.create({
+        event_type: 'LOGOUT',
+        username,
+        ip_address: req.ip,
+        details:    'User logged out',
+    });
+
     res.clearCookie('token', {
         httpOnly: true,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        secure:   process.env.NODE_ENV === 'production',
+        path:     '/',
     });
+
+    rotateCsrfContext(req, res);
 
     res.redirect('/login');
 };

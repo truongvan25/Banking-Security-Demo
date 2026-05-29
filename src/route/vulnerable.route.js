@@ -1,20 +1,23 @@
 import { Router } from 'express';
+import { attachCsrfToken } from '../middleware/csrf.middleware.js';
 import {
     showVulnerable,
-    vulnerableLogin,
-    vulnerableSearch,
-    secureLogin,
-    secureSearch,
+    vulnerableLogin, secureLogin,
+    vulnerableSearch, secureSearch,
+    vulnerableSearchById, secureSearchById,
+    vulnerableBlind,
 } from '../controller/vulnerable.controller.js';
-import { requireDemoMode } from '../middleware/demo.middleware.js';
 
 const router = Router();
 
-router.use('/vulnerable', requireDemoMode);
 router.get('/vulnerable', showVulnerable);
-router.post('/vulnerable/login',         vulnerableLogin);
-router.post('/vulnerable/search',        vulnerableSearch);
-router.post('/vulnerable/secure-login',  secureLogin);
-router.post('/vulnerable/secure-search', secureSearch);
+
+router.post('/vulnerable/login',               attachCsrfToken, vulnerableLogin);
+router.post('/vulnerable/secure-login',        attachCsrfToken, secureLogin);
+router.post('/vulnerable/search',              attachCsrfToken, vulnerableSearch);
+router.post('/vulnerable/secure-search',       attachCsrfToken, secureSearch);
+router.post('/vulnerable/search-by-id',        attachCsrfToken, vulnerableSearchById);
+router.post('/vulnerable/secure-search-by-id', attachCsrfToken, secureSearchById);
+router.post('/vulnerable/blind',               attachCsrfToken, vulnerableBlind);
 
 export default router;

@@ -16,14 +16,20 @@
     </style>
 </head>
 <body>
-    <h1>Mini Banking — Security Demo</h1>
-
-    <div class="card safe">
-        <h3>Secure Login</h3>
-        <p>Dùng Sequelize ORM + BCrypt. Chống SQL Injection.</p>
-        <a href="/login" class="btn-safe">Vào trang login</a>
+    <div style="align-items:center; margin-bottom:20px;">
+        <h1 style="margin:0">Mini Banking — Security Demo</h1>
+        <div>
+            <% if (user) { %>
+                <span style="margin-right:12px; color:#555">
+                    Xin chào, <b><%= user.username %></b>
+                </span>
+                <a href="/dashboard" class="btn-blue" style="margin-right:8px">Dashboard</a>
+                <a href="/logout" class="btn-danger">Đăng xuất</a>
+            <% } else { %>
+                <a href="/login" class="btn-safe">Đăng nhập</a>
+            <% } %>
+        </div>
     </div>
-
     <div class="card danger">
         <h3>Vulnerable Demo</h3>
         <p>String concatenation — có thể bị SQL Injection bypass.</p>

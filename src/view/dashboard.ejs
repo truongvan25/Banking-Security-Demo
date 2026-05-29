@@ -27,10 +27,8 @@
         <div>
             <span>Xin chào, <b><%= user.username %></b></span>
             <span class="badge <%= user.role %>"><%= user.role %></span>
-            <form method="POST" action="/logout" style="display:inline;">
-                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;">
-                    Đăng xuất
-                </button>
+            <a href="/" style="margin-right:8px"> Trang chủ</a>
+            <a href="/logout" style="color:white; text-decoration:none;">Đăng xuất</a>
             </form>
         </div>
     </nav>

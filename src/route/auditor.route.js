@@ -5,6 +5,6 @@ import { requireRole } from '../middleware/rbac.middleware.js';
 
 const router = Router();
 
-router.get('/audit', requireAuth, requireRole('ADMIN', 'AUDITOR'), showAuditLogs);
+router.get('/audit', requireAuth, requireRole( 'AUDITOR'), showAuditLogs);
 
 export default router;

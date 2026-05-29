@@ -11,3 +11,13 @@ export const requireAuth = (req, res, next) => {
         res.redirect(`/login?redirect=${req.originalUrl}`);
     }
 };
+export const optionalAuth = (req, res, next) => {
+    const token = req.cookies?.token;
+    if (!token) return next();
+    try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+        res.clearCookie('token');
+    }
+    next();
+};
