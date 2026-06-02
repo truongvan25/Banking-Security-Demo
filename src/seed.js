@@ -43,14 +43,6 @@ const bobAccount   = await Account.create({ user_id: created['bob'].id,   balanc
 await Transaction.create({ from_account: aliceAccount.id, to_account: bobAccount.id, amount: 500000 });
 await Transaction.create({ from_account: bobAccount.id,   to_account: aliceAccount.id, amount: 200000 });
 
-// Tạo audit log mẫu để demo trang /audit
-await AuditLog.create({ event_type: 'LOGIN_SUCCESS', username: 'alice',   ip_address: '127.0.0.1', details: 'Role: CUSTOMER' });
-await AuditLog.create({ event_type: 'LOGIN_FAIL',    username: 'hacker',  ip_address: '127.0.0.1', details: 'Invalid credentials' });
-await AuditLog.create({ event_type: 'LOGIN_FAIL',    username: 'hacker',  ip_address: '127.0.0.1', details: 'Invalid credentials' });
-await AuditLog.create({ event_type: 'LOGIN_SUCCESS', username: 'admin',   ip_address: '127.0.0.1', details: 'Role: ADMIN' });
-await AuditLog.create({ event_type: 'TRANSFER',      username: 'alice',   ip_address: '127.0.0.1', details: 'Chuyển 500,000 VNĐ → account #' + bobAccount.id });
-await AuditLog.create({ event_type: 'UNAUTHORIZED_ACCESS', username: 'alice', ip_address: '127.0.0.1', details: 'Tried to access /admin with role CUSTOMER' });
-
 console.log('Seed done!');
 console.log('Alice balance:', aliceAccount.balance, 'VNĐ — Account ID:', aliceAccount.id);
 console.log('Bob balance:  ', bobAccount.balance,   'VNĐ — Account ID:', bobAccount.id);

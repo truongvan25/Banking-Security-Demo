@@ -3,6 +3,11 @@ import sequelize from '../config/db.js';
 import User from './user.model.js';
 
 const Account = sequelize.define('Account', {
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {model: 'users', key: 'id'}
+    },
     balance: {
         type: DataTypes.DECIMAL(15, 2),
         defaultValue: 0,
