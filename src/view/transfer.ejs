@@ -55,6 +55,8 @@
         <% } %>
 
         <form method="POST" action="/transfer">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            
             <label>Account ID người nhận</label>
             <input type="number" name="to_account_id" placeholder="Nhập Account ID" min="1" required>
             <p class="hint">Hỏi Account ID của người nhận (hiển thị trên dashboard của họ)</p>

@@ -19,7 +19,15 @@
                color: white; display: inline-block; margin-right: 8px; }
         .btn-blue { background: #2980b9; }
         .btn-red  { background: #e74c3c; }
-    </style>
+        .logout-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 15px;
+        }
+            </style>
 </head>
 <body>
     <nav>
@@ -28,7 +36,10 @@
             <span>Xin chào, <b><%= user.username %></b></span>
             <span class="badge <%= user.role %>"><%= user.role %></span>
             <a href="/" style="margin-right:8px"> Trang chủ</a>
-            <a href="/logout" style="color:white; text-decoration:none;">Đăng xuất</a>
+           
+            <form method="POST" action="/logout" style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="logout-btn">Đăng xuất</button>
             </form>
         </div>
     </nav>

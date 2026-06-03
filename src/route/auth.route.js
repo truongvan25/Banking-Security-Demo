@@ -30,6 +30,11 @@ router.post(
     Logout tạm giữ GET ở bước này.
     Sau khi Login CSRF chạy ổn, ta sẽ đổi Logout sang POST + CSRF.
 */
-router.get('/logout', requireAuth, logout);
+router.post(
+    '/logout',
+    requireAuth,
+    doubleCsrfProtection,
+    logout
+);
 
 export default router;

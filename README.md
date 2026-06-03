@@ -159,7 +159,7 @@ Truy cập: `http://localhost:8080`
 | **Chuẩn bị** | Login `alice / alice123` |
 | **Thao tác** | Vào `http://localhost:8080/audit` |
 | **Output mong đợi** | Trang **403 Forbidden** |
-| **Ý nghĩa** | Audit logs chỉ dành cho ADMIN và AUDITOR |
+| **Ý nghĩa** | Audit logs chỉ dành cho AUDITOR |
 
 #### Case 1.3 — AUDITOR truy cập Transfer
 | | |
@@ -407,6 +407,180 @@ password: process.env.DB_CUSTOMER_PASS,
 | **Thao tác** | Nhập payload `admin'#` vào Vulnerable Login → Login `auditor/audit123` → vào `/audit` |
 | **Output mong đợi** | Thấy event `SQL_INJECTION_ATTEMPT` với IP và payload |
 | **Ý nghĩa** | Hệ thống phát hiện và ghi lại các pattern injection ngay cả trên endpoint vulnerable |
+
+---
+
+### 6. Transfer — Concurrency & Validation
+
+**Mục đích:** Kiểm tra các cơ chế bảo vệ giao dịch chuyển tiền: validation đầu vào, giới hạn số tiền, và chống race condition bằng `SELECT FOR UPDATE`.
+
+> Chuẩn bị: Login `alice / alice123`. Ghi lại Account ID của bob từ terminal sau khi chạy `npm run seed`.
+
+#### Case 6.1 — Chuyển tiền thành công
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` |
+| **Thao tác** | Vào `/transfer` → nhập Account ID của bob → nhập số tiền hợp lệ (ví dụ: 100,000) → Submit |
+| **Output mong đợi** | Thông báo chuyển thành công, số dư alice giảm, audit log ghi `TRANSFER` |
+| **Ý nghĩa** | Luồng chuyển tiền cơ bản hoạt động đúng |
+
+#### Case 6.2 — Tự chuyển cho chính mình
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` |
+| **Thao tác** | Vào `/transfer` → nhập Account ID của chính alice → Submit |
+| **Output mong đợi** | Lỗi "Không thể chuyển cho chính mình" |
+| **Ý nghĩa** | Hệ thống chặn self-transfer |
+
+#### Case 6.3 — Số dư không đủ
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` |
+| **Thao tác** | Vào `/transfer` → nhập số tiền lớn hơn số dư hiện tại → Submit |
+| **Output mong đợi** | Lỗi "Số dư không đủ" |
+| **Ý nghĩa** | Hệ thống kiểm tra số dư trước khi thực hiện giao dịch |
+
+#### Case 6.4 — Vượt giới hạn chuyển tiền (100 triệu)
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` |
+| **Thao tác** | Vào `/transfer` → nhập số tiền `100000001` → Submit |
+| **Output mong đợi** | Lỗi "Số tiền chuyển vượt quá giới hạn cho phép" |
+| **Ý nghĩa** | Giới hạn tối đa 100 triệu VNĐ mỗi giao dịch ngăn chặn giao dịch bất thường |
+
+#### Case 6.5 — Tài khoản nhận không tồn tại
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` |
+| **Thao tác** | Vào `/transfer` → nhập Account ID bất kỳ không tồn tại (ví dụ: `99999`) → Submit |
+| **Output mong đợi** | Lỗi "Tài khoản nhận không tồn tại" |
+| **Ý nghĩa** | Hệ thống validate tài khoản nhận trước khi deduct |
+
+#### Case 6.6 — Race condition (SELECT FOR UPDATE)
+
+**Mục đích:** Chứng minh `LOCK.UPDATE` ngăn 2 request đồng thời deduct cùng 1 số dư.
+
+**Yêu cầu:** Node.js cài sẵn, đã seed data, alice có số dư 5,000,000 VNĐ.
+
+**Bước 1** — Lấy cookie và CSRF token:
+- Login `alice / alice123` trên browser
+- Mở DevTools → Application → Cookies → copy giá trị `token` và `bank_csrf_token`
+
+**Bước 2** — Tạo file `test-race.js` tại thư mục gốc project:
+
+```js
+const COOKIE = 'token=<paste_token>; bank_csrf_token=<paste_csrf_token>';
+const TO_ACCOUNT = '<account_id_of_bob>';
+const AMOUNT = '4999000'; // gần bằng toàn bộ số dư
+
+const payload = new URLSearchParams({
+    to_account_id: TO_ACCOUNT,
+    amount: AMOUNT,
+    _csrf: '<paste_csrf_token_value>',
+}).toString();
+
+const request = () => fetch('http://localhost:8080/transfer', {
+    method: 'POST',
+    headers: {
+        'Cookie': COOKIE,
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: payload,
+});
+
+const [r1, r2] = await Promise.all([request(), request()]);
+console.log('Request 1 status:', r1.status);
+console.log('Request 2 status:', r2.status);
+```
+
+**Bước 3** — Chạy:
+```bash
+node test-race.js
+```
+
+**Bước 4** — Kiểm tra kết quả trên DB:
+```sql
+SELECT balance FROM accounts WHERE id = <alice_account_id>;
+```
+
+| | |
+|---|---|
+| **Output mong đợi** | 1 request thành công, 1 request báo lỗi "Số dư không đủ". Số dư alice giảm đúng 1 lần |
+| **Ý nghĩa** | `SELECT FOR UPDATE` block request thứ 2 lại cho đến khi request đầu commit, tránh double-deduct |
+
+---
+
+### 7. CSRF Protection
+
+**Mục đích:** Đảm bảo mọi request thay đổi trạng thái (POST) đều phải có CSRF token hợp lệ — ngăn trang web bên ngoài giả mạo hành động của user.
+
+#### Case 7.1 — Submit form thiếu CSRF token
+
+| | |
+|---|---|
+| **Chuẩn bị** | Dùng Postman hoặc curl |
+| **Thao tác** | Gửi `POST http://localhost:8080/login` với body `username=alice&password=alice123` — **không có `_csrf`** |
+| **Input** | `username=alice&password=alice123` (không có `_csrf`) |
+| **Output mong đợi** | HTTP **403** — render trang lỗi "Yêu cầu bị từ chối vì CSRF token không hợp lệ hoặc đã hết hạn." |
+| **Ý nghĩa** | Request không có token bị chặn ngay tại middleware trước khi vào controller |
+
+#### Case 7.2 — Submit form với CSRF token giả
+
+| | |
+|---|---|
+| **Chuẩn bị** | Dùng Postman |
+| **Thao tác** | Gửi `POST http://localhost:8080/transfer` với `_csrf=fake-token-abc123` kèm cookie token hợp lệ |
+| **Input** | `to_account_id=1&amount=1000&_csrf=fake-token-abc123` |
+| **Output mong đợi** | HTTP **403** — CSRF token không hợp lệ |
+| **Ý nghĩa** | Token giả không khớp với cookie `bank_csrf_token` → `doubleCsrfProtection` từ chối |
+
+#### Case 7.3 — Submit form đúng luồng (token hợp lệ)
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123` qua browser |
+| **Thao tác** | Điền form transfer bình thường → Submit |
+| **Input** | Form transfer với `_csrf` được inject tự động từ EJS (`<%= csrfToken %>`) |
+| **Output mong đợi** | Giao dịch thực hiện thành công |
+| **Ý nghĩa** | Token lấy từ server qua EJS luôn hợp lệ — luồng bình thường không bị ảnh hưởng |
+
+---
+
+### 8. Transaction History
+
+**Mục đích:** CUSTOMER xem lịch sử giao dịch của tài khoản mình — chỉ hiển thị các giao dịch liên quan đến account của user đó.
+
+#### Case 8.1 — CUSTOMER xem lịch sử giao dịch
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice / alice123`, đã thực hiện ít nhất 1 giao dịch transfer |
+| **Thao tác** | Vào `http://localhost:8080/transactions` |
+| **Output mong đợi** | Danh sách giao dịch của alice (from/to account của alice), sắp xếp mới nhất lên đầu |
+| **Ý nghĩa** | User chỉ thấy giao dịch của mình, không thấy giao dịch của người khác |
+
+#### Case 8.2 — AUDITOR truy cập Transaction History
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `auditor / audit123` |
+| **Thao tác** | Vào `http://localhost:8080/transactions` |
+| **Output mong đợi** | Trang **403 Forbidden** |
+| **Ý nghĩa** | AUDITOR không có account ngân hàng — route chỉ dành cho CUSTOMER |
+
+#### Case 8.3 — Xem lịch sử sau nhiều giao dịch
+
+| | |
+|---|---|
+| **Chuẩn bị** | Login `alice`, thực hiện 3 lần transfer (2 gửi đi, 1 nhận về từ bob) |
+| **Thao tác** | Vào `/transactions` |
+| **Output mong đợi** | Hiển thị đủ 3 giao dịch, bao gồm cả giao dịch alice là người nhận |
+| **Ý nghĩa** | Query dùng `Op.or` — lấy cả giao dịch `from_account` lẫn `to_account` của alice |
 
 ---
 
