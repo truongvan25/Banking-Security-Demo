@@ -106,10 +106,7 @@ export const login = async (req, res) => {
             });
         }
 
-        const passwordValid = bcrypt.compareSync(
-            password,
-            user.password_hash
-        );
+        const passwordValid = bcrypt.compareSync(password, user.password_hash);
 
         /*
             Sai mật khẩu: tăng số lần thất bại.

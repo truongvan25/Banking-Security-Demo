@@ -204,6 +204,7 @@ export const secureSearch = async (req, res) => {
 
 export const vulnerableSearchById = async (req, res) => {
     const { user_id } = req.body;
+    
     const sql = `SELECT id, username, role FROM users WHERE id = ${user_id}`;
 
     if (containsSqlInjectionPattern(user_id)) {

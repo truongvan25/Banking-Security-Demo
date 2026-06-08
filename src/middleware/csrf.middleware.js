@@ -42,31 +42,12 @@ export const ensureCsrfId = (req, res, next) => {
     next();
 };
 
-const {
-    generateCsrfToken,
-    doubleCsrfProtection,
-} = doubleCsrf({
+const { generateCsrfToken, doubleCsrfProtection} = doubleCsrf({
     getSecret: () => process.env.CSRF_SECRET,
-
-    /*
-        Token được gắn với một ID riêng của trình duyệt.
-        Không dùng chung một chuỗi "anonymous" cho mọi người dùng.
-    */
     getSessionIdentifier: (req) => req.cookies[CSRF_ID_COOKIE],
-
     cookieName: CSRF_TOKEN_COOKIE,
-
     cookieOptions,
-
-    /*
-        Các request đọc dữ liệu không cần CSRF validation.
-    */
     ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-
-    /*
-        Form EJS gửi token qua input hidden tên _csrf.
-        Tuyệt đối không lấy token từ cookie tại đây.
-    */
     getCsrfTokenFromRequest: (req) => req.body._csrf,
 });
 
@@ -87,7 +68,6 @@ export const attachCsrfToken = (req, res, next) => {
 */
 export const rotateCsrfContext = (req, res) => {
     const newCsrfId = randomUUID();
-
     res.cookie(CSRF_ID_COOKIE, newCsrfId, cookieOptions);
     res.clearCookie(CSRF_TOKEN_COOKIE, cookieOptions);
 };

@@ -43,21 +43,12 @@ app.disable('x-powered-by');
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'"],
-            imgSrc: ["'self'", 'data:'],
-            objectSrc: ["'none'"],
-            baseUri: ["'self'"],
-            formAction: ["'self'"],
-            frameAncestors: ["'none'"],
+            defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"], imgSrc: ["'self'", 'data:'],
+            objectSrc: ["'none'"], baseUri: ["'self'"],
+            formAction: ["'self'"], frameAncestors: ["'none'"],
         },
     },
-
-    /*
-        Localhost đang dùng HTTP.
-        Khi deploy bằng HTTPS thật mới bật HSTS.
-    */
     strictTransportSecurity: false,
 }));
 
